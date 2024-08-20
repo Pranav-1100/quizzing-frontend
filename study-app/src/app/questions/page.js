@@ -1,10 +1,24 @@
-import QuestionGenerator from '@/components/QuestionGenerator';
+'use client';
+
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { api } from '@/lib/api';
+import AnimatedCard from '@/components/AnimatedCard';
 
 export default function QuestionsPage() {
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Generate Study Questions</h1>
-      <QuestionGenerator />
-    </div>
-  );
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { register, handleSubmit, formState: { errors } } = useForm();
+
+  const onSubmit = async (data) => {
+    setLoading(true);
+    try {
+      const generatedQuestions = await api.questions.generate(data);
+      setQuestions(generatedQuestions);
+    } catch (error) {
+      console.error('Failed to generate questions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 }

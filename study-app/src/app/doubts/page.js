@@ -52,6 +52,29 @@ export default function DoubtsPage() {
       alert('Failed to fetch doubt details. Please try again.');
     }
   };
+
+  const handleAddComment = async (comment) => {
+    try {
+      await api.doubts.addComment(selectedDoubt.id, { content: comment });
+      const updatedDoubt = await api.doubts.getById(selectedDoubt.id);
+      setSelectedDoubt(updatedDoubt);
+    } catch (error) {
+      console.error('Failed to add comment:', error);
+      alert('Failed to add comment. Please try again.');
+    }
+  };
+
+  const handleResolveDoubt = async () => {
+    try {
+      await api.doubts.resolve(selectedDoubt.id);
+      setSelectedDoubt({ ...selectedDoubt, resolved: true });
+      fetchDoubts();
+    } catch (error) {
+      console.error('Failed to resolve doubt:', error);
+      alert('Failed to resolve doubt. Please try again.');
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Doubts Forum</h1>
@@ -85,37 +108,84 @@ export default function DoubtsPage() {
               {...register('subject', { required: 'Subject is required' })}
               className="input"
               placeholder="e.g., Mathematics, Physics"
-              />
-              {errors.subject && <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>}
+            />
+            {errors.subject && <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>}
+          </div>
+          <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+            {loading ? 'Submitting...' : 'Submit Question'}
+          </button>
+        </form>
+      </AnimatedCard>
+
+      <AnimatedCard className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">Recent Questions</h2>
+        {doubts.length > 0 ? (
+          <ul className="space-y-4">
+            {doubts.map((doubt) => (
+              <li key={doubt.id} className="bg-white p-4 rounded-lg shadow">
+                <h3 className="font-semibold text-lg">{doubt.title}</h3>
+                <p className="text-gray-600 mt-1">{doubt.subject}</p>
+                <p className="mt-2 truncate">{doubt.content}</p>
+                <button
+                  onClick={() => handleViewDoubt(doubt.id)}
+                  className="mt-2 text-primary hover:underline"
+                >
+                  View Details
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No questions have been asked yet. Be the first to ask!</p>
+        )}
+      </AnimatedCard>
+
+      <Modal
+        isOpen={showDoubtModal}
+        onClose={() => setShowDoubtModal(false)}
+        title={selectedDoubt?.title}
+      >
+        {selectedDoubt && (
+          <div className="space-y-4">
+            <p><strong>Subject:</strong> {selectedDoubt.subject}</p>
+            <p><strong>Question:</strong> {selectedDoubt.content}</p>
+            <div>
+              <h4 className="font-semibold">Comments:</h4>
+              {selectedDoubt.comments.length > 0 ? (
+                <ul className="mt-2 space-y-2">
+                  {selectedDoubt.comments.map((comment, index) => (
+                    <li key={index} className="bg-gray-100 p-2 rounded">
+                      {comment.content}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No comments yet.</p>
+              )}
             </div>
-            <button type="submit" className="btn btn-primary w-full" disabled={loading}>
-              {loading ? 'Submitting...' : 'Submit Question'}
-            </button>
-          </form>
-        </AnimatedCard>
-  
-        <AnimatedCard className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">Recent Questions</h2>
-          {doubts.length > 0 ? (
-            <ul className="space-y-4">
-              {doubts.map((doubt) => (
-                <li key={doubt.id} className="bg-white p-4 rounded-lg shadow">
-                  <h3 className="font-semibold text-lg">{doubt.title}</h3>
-                  <p className="text-gray-600 mt-1">{doubt.subject}</p>
-                  <p className="mt-2 truncate">{doubt.content}</p>
-                  <button
-                    onClick={() => handleViewDoubt(doubt.id)}
-                    className="mt-2 text-primary hover:underline"
-                  >
-                    View Details
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No questions have been asked yet. Be the first to ask!</p>
-          )}
-        </AnimatedCard>
-      </div>
-    );
-  }
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleAddComment(e.target.comment.value);
+              e.target.comment.value = '';
+            }}>
+              <textarea
+                name="comment"
+                className="input h-24 w-full"
+                placeholder="Add a comment..."
+                required
+              />
+              <button type="submit" className="btn btn-secondary mt-2">
+                Add Comment
+              </button>
+            </form>
+            {!selectedDoubt.resolved && (
+              <button onClick={handleResolveDoubt} className="btn btn-primary">
+                Mark as Resolved
+              </button>
+            )}
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+}
