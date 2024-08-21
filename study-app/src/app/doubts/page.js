@@ -5,8 +5,9 @@ import { useForm } from 'react-hook-form';
 import { api } from '@/lib/api';
 import AnimatedCard from '@/components/AnimatedCard';
 import Modal from '@/components/Modal';
+import { withAuth } from '@/components/withAuth';
 
-export default function DoubtsPage() {
+function DoubtsPage() {
   const [doubts, setDoubts] = useState([]);
   const [selectedDoubt, setSelectedDoubt] = useState(null);
   const [showDoubtModal, setShowDoubtModal] = useState(false);
@@ -19,8 +20,8 @@ export default function DoubtsPage() {
 
   const fetchDoubts = async () => {
     try {
-      const fetchedDoubts = await api.doubts.getAll(1, 10);
-      setDoubts(fetchedDoubts);
+      const response = await api.doubts.getAll(1, 10);
+      setDoubts(response.rows);
     } catch (error) {
       console.error('Failed to fetch doubts:', error);
       alert('Failed to fetch doubts. Please try again.');
@@ -58,6 +59,7 @@ export default function DoubtsPage() {
       await api.doubts.addComment(selectedDoubt.id, { content: comment });
       const updatedDoubt = await api.doubts.getById(selectedDoubt.id);
       setSelectedDoubt(updatedDoubt);
+      fetchDoubts(); // Refresh the doubts list
     } catch (error) {
       console.error('Failed to add comment:', error);
       alert('Failed to add comment. Please try again.');
@@ -67,8 +69,9 @@ export default function DoubtsPage() {
   const handleResolveDoubt = async () => {
     try {
       await api.doubts.resolve(selectedDoubt.id);
-      setSelectedDoubt({ ...selectedDoubt, resolved: true });
-      fetchDoubts();
+      setSelectedDoubt({ ...selectedDoubt, isResolved: true });
+      fetchDoubts(); // Refresh the doubts list
+      setShowDoubtModal(false);
     } catch (error) {
       console.error('Failed to resolve doubt:', error);
       alert('Failed to resolve doubt. Please try again.');
@@ -124,7 +127,8 @@ export default function DoubtsPage() {
             {doubts.map((doubt) => (
               <li key={doubt.id} className="bg-white p-4 rounded-lg shadow">
                 <h3 className="font-semibold text-lg">{doubt.title}</h3>
-                <p className="text-gray-600 mt-1">{doubt.subject}</p>
+                <p className="text-gray-600 mt-1">Subject: {doubt.subject}</p>
+                <p className="text-gray-600 mt-1">By: {doubt.user.username}</p>
                 <p className="mt-2 truncate">{doubt.content}</p>
                 <button
                   onClick={() => handleViewDoubt(doubt.id)}
@@ -132,6 +136,9 @@ export default function DoubtsPage() {
                 >
                   View Details
                 </button>
+                {doubt.isResolved && (
+                  <span className="ml-2 text-green-500">Resolved</span>
+                )}
               </li>
             ))}
           </ul>
@@ -148,6 +155,7 @@ export default function DoubtsPage() {
         {selectedDoubt && (
           <div className="space-y-4">
             <p><strong>Subject:</strong> {selectedDoubt.subject}</p>
+            <p><strong>Asked by:</strong> {selectedDoubt.user.username}</p>
             <p><strong>Question:</strong> {selectedDoubt.content}</p>
             <div>
               <h4 className="font-semibold">Comments:</h4>
@@ -178,10 +186,13 @@ export default function DoubtsPage() {
                 Add Comment
               </button>
             </form>
-            {!selectedDoubt.resolved && (
+            {!selectedDoubt.isResolved && (
               <button onClick={handleResolveDoubt} className="btn btn-primary">
                 Mark as Resolved
               </button>
+            )}
+            {selectedDoubt.isResolved && (
+              <p className="text-green-500 font-semibold">This doubt has been resolved.</p>
             )}
           </div>
         )}
@@ -189,3 +200,5 @@ export default function DoubtsPage() {
     </div>
   );
 }
+
+export default withAuth(DoubtsPage);

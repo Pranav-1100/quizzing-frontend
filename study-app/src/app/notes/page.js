@@ -5,8 +5,10 @@ import { useForm } from 'react-hook-form';
 import { api } from '@/lib/api';
 import AnimatedCard from '@/components/AnimatedCard';
 import Modal from '@/components/Modal';
+import { withAuth } from '@/components/withAuth';
+import Flashcard from '@/components/Flashcard';
 
-export default function NotesPage() {
+function NotesPage() {
   const [notes, setNotes] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -46,6 +48,15 @@ export default function NotesPage() {
       console.error('Failed to generate flashcards:', error);
       alert('Failed to generate flashcards. Please try again.');
     }
+  };
+
+  const formatNotes = (content) => {
+    return content.split('\n').map((line, index) => {
+      if (line.startsWith('- ')) {
+        return <li key={index} className="ml-6 list-disc">{line.slice(2)}</li>;
+      }
+      return <p key={index} className="mb-2">{line}</p>;
+    });
   };
 
   return (
@@ -96,7 +107,9 @@ export default function NotesPage() {
       {notes && (
         <AnimatedCard className="mt-8">
           <h2 className="text-2xl font-bold mb-4">Generated Notes</h2>
-          <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: notes.content }} />
+          <div className="prose max-w-none">
+            {formatNotes(notes.content)}
+          </div>
           <div className="mt-4 space-x-4">
             <button onClick={handleShare} className="btn btn-secondary">
               Share Notes
@@ -113,23 +126,30 @@ export default function NotesPage() {
         onClose={() => setShowShareModal(false)}
         title="Notes Shared"
       >
-        <p>Your notes have been successfully shared!</p>
+        <div className="p-4 bg-gray-100 rounded-md">
+          <p className="mb-2">Your notes have been successfully shared!</p>
+          <div className="flex items-center space-x-2">
+            <svg className="w-6 h-6 text-gray-600" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span>study_notes.pdf</span>
+          </div>
+        </div>
       </Modal>
 
       <Modal
-        isOpen={showFlashcardsModal}
-        onClose={() => setShowFlashcardsModal(false)}
-        title="Generated Flashcards"
-      >
-        <div className="space-y-4">
-          {flashcards.map((flashcard, index) => (
-            <div key={index} className="bg-gray-100 p-4 rounded-lg">
-              <p className="font-semibold">Front: {flashcard.front}</p>
-              <p className="mt-2">Back: {flashcard.back}</p>
-            </div>
-          ))}
-        </div>
-      </Modal>
+  isOpen={showFlashcardsModal}
+  onClose={() => setShowFlashcardsModal(false)}
+  title="Generated Flashcards"
+>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {flashcards.map((flashcard, index) => (
+      <Flashcard key={index} question={flashcard} />
+    ))}
+  </div>
+</Modal>
     </div>
   );
 }
+
+export default withAuth(NotesPage);
