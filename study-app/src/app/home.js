@@ -17,7 +17,7 @@ export default function HomePage() {
   }, [user, router]);
 
   if (!user) {
-    return null; // Or a loading spinner
+    return null; 
   }
 
   return (
