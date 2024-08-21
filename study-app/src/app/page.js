@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import AnimatedCard from '@/components/AnimatedCard';
 
@@ -12,9 +14,24 @@ export default function HomePage() {
           link="/questions"
         />
         <FeatureCard
+          title="Study Notes"
+          description="Generate and manage your study notes effortlessly."
+          link="/notes"
+        />
+        <FeatureCard
+          title="Study Plan"
+          description="Create a personalized study plan to ace your exams."
+          link="/study-plan"
+        />
+        <FeatureCard
           title="Doubts Forum"
           description="Ask questions and get help from the community."
           link="/doubts"
+        />
+        <FeatureCard
+          title="Profile"
+          description="Manage your profile and preferences."
+          link="/profile"
         />
       </div>
     </div>
