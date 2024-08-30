@@ -9,3 +9,6 @@ This is frontend for the same backend (https://github.com/Pranav-1100/quizzing) 
 ``` npm run dev ```
 
 After that just go to localhost it is running on (you can refer to your terminal to know about the localhost it is running on to) and experience it :D.
+
+
+Loom :- [Loom](https://www.loom.com/share/ea7f4cf3b86b4a4ebbd23c2522725d1d?sid=c7fada85-d912-4521-a169-315e1ac6552f)
