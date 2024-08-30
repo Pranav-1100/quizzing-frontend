@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:3000/api';
+const BASE_URL = 'https://quizzing-1.onrender.com/api';
 
 async function fetchWithAuth(url, options = {}) {
   const token = localStorage.getItem('authToken');

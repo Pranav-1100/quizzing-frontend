@@ -1,18 +1,10 @@
-
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import AnimatedCard from '@/components/AnimatedCard';
-const router = useRouter();
-
-useEffect(() => {
-  if (user) {
-    router.push('/');
-  }
-}, [user, router]);
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -20,7 +12,13 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
-  const { register } = useAuth();
+  const { user, register } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      router.push('/');
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
